@@ -1,0 +1,202 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Entre em contato com a LF Store em São Luís: WhatsApp, e-mail, Instagram ou visite nossa localização.">
+    <meta name="keywords" content="LF Store, contato, São Luís, WhatsApp, e-mail, Instagram, localização">
+    <meta name="author" content="LF Store">
+    <title>LF Store - Contato</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <link rel="icon" href="https://via.placeholder.com/32.png?text=LF" type="image/png">
+    <style>
+        body { font-family: 'Inter', sans-serif; min-width: 280px; }
+        .smooth-scroll { scroll-behavior: smooth; }
+        .contact-card { box-sizing: border-box; width: 100%; min-width: 200px; max-width: 300px; margin: 0 auto; transition: all 0.3s ease; }
+        .contact-card:hover { transform: scale(1.1); }
+        .location-card:hover { background-image: linear-gradient(to right, #b91c1c, #dc2626); }
+        .whatsapp-card:hover { background-image: linear-gradient(to right, #15803d, #22c55e); }
+        .email-card:hover { background-image: linear-gradient(to right, #1e40af, #3b82f6); }
+        .instagram-card:hover { background-image: linear-gradient(to right, #6b21a8, #ec4899); }
+        .whatsapp-btn { position: fixed; bottom: 12px; right: 12px; z-index: 100; }
+        .menu-toggle { display: none; }
+        iframe { aspect-ratio: 4/3; max-width: 280px; width: 100%; }
+        nav { height: 64px; }
+        @media (max-width: 640px) {
+            .menu-toggle { display: block; }
+            .nav-links { display: none; }
+            .nav-links.active { display: flex; flex-direction: column; position: absolute; top: 64px; left: 0; width: 100%; background: #dc2626; padding: 16px; z-index: 40; }
+            .nav-links.active a { padding: 8px 0; text-align: center; }
+            .whatsapp-btn img { width: 48px; height: 48px; }
+            .text-4xl { font-size: 1.875rem; line-height: 2.25rem; }
+            .text-xl { font-size: 1.125rem; line-height: 1.75rem; }
+            .text-lg { font-size: 1rem; line-height: 1.5rem; }
+            .text-base { font-size: 0.875rem; line-height: 1.25rem; }
+            .py-20 { padding-top: 2rem; padding-bottom: 2rem; }
+            .mb-12 { margin-bottom: 1rem; }
+            .mb-8 { margin-bottom: 0.75rem; }
+            .px-2 { padding-left: 0.25rem; padding-right: 0.25rem; }
+            .gap-12 { gap: 1rem; }
+            .p-6 { padding: 1rem; }
+            iframe { max-height: 150px; }
+            .contact-card img { width: 24px; height: 24px; }
+            .contact-card button { padding: 0.5rem 0.75rem; font-size: 0.875rem; }
+        }
+        @media (max-width: 360px) {
+            .text-4xl { font-size: 1.5rem; line-height: 2rem; }
+            .text-xl { font-size: 1rem; line-height: 1.5rem; }
+            .text-lg { font-size: 0.875rem; line-height: 1.25rem; }
+            .text-base { font-size: 0.75rem; line-height: 1rem; }
+            .gap-12 { gap: 0.5rem; }
+            .contact-card { min-width: 180px; }
+            iframe { max-height: 120px; }
+            .contact-card img { width: 20px; height: 20px; }
+            .contact-card button { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .contact-card, .gsap-anim { transition: none; transform: none; opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 smooth-scroll">
+    <!-- Navbar -->
+    <nav class="bg-red-600 text-white fixed w-full top-0 z-50 shadow-lg" role="navigation">
+        <div class="container mx-auto px-2 py-4 flex justify-between items-center max-w-screen-sm">
+            <a href="index.html" class="text-2xl font-bold">LF Store</a>
+            <button class="menu-toggle sm:hidden text-white focus:outline-none" aria-label="Abrir menu de navegação">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <div class="nav-links flex space-x-6 sm:flex">
+                <a href="index.html" class="hover:text-gray-200 transition">Home</a>
+                <a href="servicos.html" class="hover:text-gray-200 transition">Serviços</a>
+                <a href="vendas.html" class="hover:text-gray-200 transition">Vendas</a>
+                <a href="contato.html" class="hover:text-gray-200 transition">Contato</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contato Section -->
+    <section class="py-20 bg-white min-h-screen mt-16 sm:mt-0" role="region" aria-label="Entre em contato">
+        <div class="container mx-auto px-2 max-w-screen-md">
+            <h2 class="text-4xl font-bold text-center text-red-600 mb-12">Entre em Contato</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 justify-items-center">
+                <!-- Localização -->
+                <div class="contact-card location-card bg-gradient-to-r from-red-700 to-red-500 p-6 rounded-xl shadow-xl text-white">
+                    <h3 class="text-xl font-semibold mb-2">Localização</h3>
+                    <p class="text-lg font-bold mb-4">Av. Gen. Arthur Carvalho, 320 - Turu, São Luís, MA</p>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.149171104103!2d-44.27841308505254!3d-2.531717998161594!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7f68f5c8f8b5e7b%3A0x5e9b7c8f6e4b2c3!2sAv.%20Gen.%20Arthur%20Carvalho%2C%20320%20-%20Turu%2C%20S%C3%A3o%20Lu%C3%ADs%20-%20MA%2C%2065065-470%2C%20Brasil!5e0!3m2!1spt-BR!2sbr!4v1697654321098!5m2!1spt-BR!2sbr" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <a href="https://www.google.com/maps?q=Av.+Gen.+Arthur+Carvalho,+320,+Turu,+São+Luís,+MA" target="_blank" class="bg-white text-red-600 px-4 py-2 rounded-full font-bold hover:bg-red-100 transition inline-block mt-2" aria-label="Ver localização no Google Maps">
+                        <img src="https://img.icons8.com/color/32/000000/marker.png" alt="Mapa" class="inline-block mr-2 w-8 h-8"> Ver no Mapa
+                    </a>
+                </div>
+
+                <!-- WhatsApp -->
+                <div class="contact-card whatsapp-card bg-gradient-to-r from-green-700 to-green-500 p-6 rounded-xl shadow-xl text-white">
+                    <h3 class="text-xl font-semibold mb-2">WhatsApp</h3>
+                    <p class="text-lg font-bold mb-4">(98) 99215-1120</p>
+                    <a href="https://wa.me/5598992151120?text=Olá, quero falar com a LF Store!" target="_blank" class="bg-white text-green-600 px-4 py-2 rounded-full font-bold hover:bg-green-100 transition inline-block" aria-label="Fale conosco via WhatsApp">
+                        <img src="https://img.icons8.com/color/32/000000/whatsapp.png" alt="WhatsApp" class="inline-block mr-2 w-8 h-8"> Fale Agora
+                    </a>
+                </div>
+
+                <!-- E-mail -->
+                <div class="contact-card email-card bg-gradient-to-r from-blue-700 to-blue-500 p-6 rounded-xl shadow-xl text-white">
+                    <h3 class="text-xl font-semibold mb-2">E-mail</h3>
+                    <p class="text-lg font-bold mb-4">loja.lfstore@gmail.com</p>
+                    <a href="mailto:loja.lfstore@gmail.com" class="bg-white text-blue-600 px-4 py-2 rounded-full font-bold hover:bg-blue-100 transition inline-block" aria-label="Enviar e-mail para a LF Store">
+                        <img src="https://img.icons8.com/color/32/000000/email.png" alt="E-mail" class="inline-block mr-2 w-8 h-8"> Enviar E-mail
+                    </a>
+                </div>
+
+                <!-- Instagram -->
+                <div class="contact-card instagram-card bg-gradient-to-r from-purple-700 to-pink-500 p-6 rounded-xl shadow-xl text-white">
+                    <h3 class="text-xl font-semibold mb-2">Instagram</h3>
+                    <p class="text-lg font-bold mb-4">@lfstoreslz</p>
+                    <a href="https://www.instagram.com/lfstoreslz" target="_blank" class="bg-white text-purple-600 px-4 py-2 rounded-full font-bold hover:bg-purple-100 transition inline-block" aria-label="Ver perfil do Instagram da LF Store">
+                        <img src="https://img.icons8.com/color/32/000000/instagram-new.png" alt="Instagram" class="inline-block mr-2 w-8 h-8"> Ver Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/5598992151120" target="_blank" class="whatsapp-btn" aria-label="Fale conosco via WhatsApp">
+        <img src="https://img.icons8.com/color/48/000000/whatsapp.png" alt="WhatsApp" class="w-12 h-12">
+    </a>
+
+    <!-- Footer -->
+    <footer class="bg-red-600 text-white py-6">
+        <div class="container mx-auto px-2 text-center max-w-screen-sm">
+            <p>© 2025 LF Store. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Menu Hambúrguer
+        const menuToggle = document.querySelector('.menu-toggle');
+        const navLinks = document.querySelector('.nav-links');
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.from("nav", { duration: 0.2, y: -100, opacity: 0, ease: "power2.out" });
+        gsap.from(".whatsapp-btn", { duration: 0.2, opacity: 0, x: 100, delay: 1 });
+        const contactCards = document.querySelectorAll(".contact-card");
+        contactCards.forEach((card) => {
+            gsap.from(card, {
+                duration: 0.2,
+                opacity: 0,
+                y: 50,
+                scrollTrigger: { trigger: card, start: "top 80%" },
+            });
+        });
+    </script>
+</body>
+</html>
